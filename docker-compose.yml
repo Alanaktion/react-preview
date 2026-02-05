@@ -1,0 +1,37 @@
+# Example of a Docker setup behind a Traefik proxy
+
+services:
+  node:
+    restart: unless-stopped
+    image: node:lts
+    user: "1000"
+    working_dir: /home/node/app
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./:/home/node/app
+    networks:
+      - proxy
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.services.react-preview.loadbalancer.server.port=5173
+      - traefik.http.routers.react-preview.rule=Host(`react.example`)
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+
+  traefik:
+    image: traefik:v3.6
+    container_name: traefik
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - proxy
+    ports:
+      - 80:80
+      - 443:443
+      - 8080:8080
+    labels:
+      - traefik.enable=true
+
+networks:
+  proxy:

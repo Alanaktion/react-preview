@@ -6,5 +6,8 @@ export default defineConfig({
   plugins: [
     autoInjectImports(),
     react()
-  ]
+  ],
+  server: {
+    allowedHosts: true,
+  },
 })
