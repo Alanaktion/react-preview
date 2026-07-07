@@ -34,6 +34,26 @@ function Index() {
 function Preview() {
   const { name } = useParams()
   const iframeRef = React.useRef(null)
+  const originalRef = React.useRef(null)
+
+  React.useEffect(() => {
+    const origIcon = document.querySelector("link[rel~=icon]")
+    originalRef.current = {
+      title: document.title,
+      iconHref: origIcon ? origIcon.href : null,
+    }
+    return () => {
+      document.title = originalRef.current.title
+      const cur = document.querySelector("link[rel~=icon]")
+      if (cur) {
+        if (originalRef.current.iconHref != null) {
+          cur.href = originalRef.current.iconHref
+        } else {
+          cur.remove()
+        }
+      }
+    }
+  }, [name])
 
   const htmlMod = htmlFiles[`./previews/${name}.html`]
   if (htmlMod) {
@@ -43,8 +63,22 @@ function Preview() {
         src={htmlMod.default}
         onLoad={() => {
           try {
-            const title = iframeRef.current?.contentDocument?.title
+            const doc = iframeRef.current?.contentDocument
+            if (!doc) return
+            const title = doc.title
             if (title) document.title = title
+            const icon = doc.querySelector("link[rel~=icon]")
+            if (icon) {
+              let rootIcon = document.querySelector("link[rel~=icon]")
+              if (rootIcon) {
+                rootIcon.href = icon.href
+              } else {
+                const link = document.createElement("link")
+                link.rel = "icon"
+                link.href = icon.href
+                document.head.appendChild(link)
+              }
+            }
           } catch {}
         }}
         style={{ display: "block", width: "100vw", height: "100vh", border: "none" }}
