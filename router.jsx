@@ -33,12 +33,20 @@ function Index() {
 
 function Preview() {
   const { name } = useParams()
+  const iframeRef = React.useRef(null)
 
   const htmlMod = htmlFiles[`./previews/${name}.html`]
   if (htmlMod) {
     return (
       <iframe
+        ref={iframeRef}
         src={htmlMod.default}
+        onLoad={() => {
+          try {
+            const title = iframeRef.current?.contentDocument?.title
+            if (title) document.title = title
+          } catch {}
+        }}
         style={{ display: "block", width: "100vw", height: "100vh", border: "none" }}
       />
     )
