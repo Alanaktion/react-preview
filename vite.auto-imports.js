@@ -25,7 +25,12 @@ export default function autoInjectImports() {
         let match
 
         while ((match = JSX_TAG_REGEX.exec(code))) {
-          used.add(match[1])
+          // Skip components the file already declares or imports itself.
+          const name = match[1]
+          const declared = new RegExp(
+            `\\b(?:function|class|const|let|var)\\s+${name}\\b|import[^;]*\\b${name}\\b[^;]*from`
+          )
+          if (!declared.test(code)) used.add(name)
         }
 
         if (used.size) {
